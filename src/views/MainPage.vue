@@ -1,135 +1,134 @@
 <template>
-
   <v-app class="overflow-hidden">
     <v-app-bar
       absolute
       elevate-on-scroll
       scroll-target="#scrolling-techniques-7"
-    ><span class="title" style="font-style: italic;">CineMatch</span>
-
+    >
+      <span class="title" style="font-style: italic;">CineMatch</span>
       <router-link to="/" class="menu" style="color: white">홈</router-link>
       <router-link to="/about" class="menu" style="color: white;">추천</router-link>
-
       <v-spacer></v-spacer>
 
-
-      <!--검색-->
-      <v-responsive
-      class="mx-auto"
-      max-width="344"
-      >
+      <!-- 검색 -->
+      <v-responsive class="mx-auto" max-width="344">
         <v-text-field
-        hide-details="auto"
-        label="영화 제목 검색.."
-        color="red"
+          v-model="searchQuery"
+          hide-details="auto"
+          label="영화 제목 검색.."
+          color="red"
+          @keyup.enter="performSearch"
         ></v-text-field>
       </v-responsive>
-      <v-btn icon style="">
+      <v-btn icon @click="performSearch">
         <v-icon>mdi-magnify</v-icon>
       </v-btn>
 
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
     </v-app-bar>
-    
-    <br>
-    <br>
 
-    <div>
-      <!--장르 선택-->
-      <v-select color="red"
-      label="장르"
-      :items="genres"
-      variant="solo-inverted" class="genres"
-      @change="filterCards"
-      ></v-select>
-      <!--장르 card 슬라이드-->
-      <v-sheet
-      class="mx-auto"
-      elevation="8"
-      max-width= 100%
-      height="400"
-      >
-        <v-carousel hide-delimiters
-        v-model="model"
-        class="pa-4"
-        selected-class="bg-success"
-        show-arrows
-        >
-        <template v-for="(group, index) in Math.ceil(filteredCards.length / 5)">
-          <v-carousel-item :key="index">
-            <div style="display: flex; justify-content: center;">
-              <template v-for="card in filteredCards.slice(index * 5, (index + 1) * 5)">
-                <v-card class="card" @click="toggle(card)" :key="card.id">
-                  <v-card-title>{{ card.title }}</v-card-title>
-                </v-card>
-              </template>
-            </div>
-          </v-carousel-item>
-        </template>
-      </v-carousel>
-    </v-sheet>
-  </div>
+    <!-- 장르 선택 드롭다운 -->
+    <v-container>
+      <v-row>
+        <v-col cols="12">
+          <v-select
+            v-model="selectedGenre"
+            :items="genres"
+            label="장르"
+            single-line
+            item-text="name"
+            item-value="name"
+            @change="filterMoviesByGenre"
+          ></v-select>
+        </v-col>
+      </v-row>
+    </v-container>
 
-  
+    <v-container>
+      <v-row>
+        <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
+          <v-card class="movie-card" flat>
+            <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
+            <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-app>
 </template>
 
 <script>
-
+import axios from "@/axios";
 
 export default {
-  name:"App",
-  data(){
-    return{
-      drawer:null,
-        //장르선택
-        genres:[
-        'Adventure',
-        'Animation',
-        'Children',
-        'Comedy',
-        'Fantasy',
-        'Romance',
-        'Drama',
-        'Crime',
-        'Thriller'
-        ],
-        model: 1,
-        cards: [
-        { id: 1, title: 'Toy Story (1995)', genre: ['Adventure','Animation','Children','Comedy','Fantasy']},
-        { id: 2, title: 'Jumanji (1995)', genre: ['Adventure','Children','Fantasy'] },
-        { id: 3, title: 'Grumpier Old Men (1995)', genre: ['Comedy','Romance']},
-        { id: 4, title: 'Waiting to Exhale (1995)', genre: ['Comedy','Drama','Romance'] },
-        { id: 5, title: 'Father of the Bride Part II (1995)', genre: ['Comedy']},
-        { id: 6, title: 'Heat (1995)', genre: ['Action','Crime','Thriller'] },
-        { id: 7, title: 'Sabrina (1995)', genre: ['Comedy','Romance'] },
-        { id: 8, title: 'Sabrina (1995)', genre: ['Comedy','Romance'] },
-        { id: 9, title: 'Sabrina (1995)', genre: ['Action'] },
-        { id: 10, title: 'Sabrina (1995)', genre: ['Comedy','Romance'] },
-        { id: 11, title: 'Sabrina (1995)', genre: ['Comedy','Romance'] },
-      ],
-      filteredCards: [] 
-    }
+  name: "MainPage",
+  data() {
+    return {
+      searchQuery: "",
+      movies: [],
+      visibleMovies: [],
+      selectedGenre: null,
+      genres: [],
+      pageSize: 10,
+      nextPage: 0,
+      loading: false
+    };
   },
-  created() {
-    this.filteredCards = [...this.cards];
+  mounted() {
+    this.getAllMovies();
+    window.addEventListener('scroll', this.handleScroll);
   },
-  methods:{
-    toggle(card){
-    
-
-      this.$router.push({ name: 'DetailPage', params: { id: card.id } });
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.handleScroll);
+  },
+  methods: {
+    performSearch() {
+      if (this.searchQuery.trim()) {
+        this.$router.push({ path: "/search", query: { q: this.searchQuery } });
+      }
     },
-    filterCards(genre) {
-      this.filteredCards = this.cards.filter(card => card.genre.includes(genre));
+    getAllMovies() {
+      axios.get("/all").then(response => {
+        this.movies = response.data;
+        this.addMoviesToView();
+      }).catch(error => {
+        console.error("Error fetching movies:", error);
+      });
+    },
+    addMoviesToView() {
+      if (this.loading) return;
+      this.loading = true;
+      const nextBatch = this.movies.slice(this.nextPage * this.pageSize, (this.nextPage + 1) * this.pageSize);
+      this.visibleMovies.push(...nextBatch);
+      this.nextPage++;
+      this.loading = false;
+    },
+    handleScroll() {
+      let bottomOfWindow = window.innerHeight + window.scrollY >= document.body.offsetHeight - 10;
+      if (bottomOfWindow && !this.loading) {
+        this.addMoviesToView();
+      }
+    },
+    fetchGenres() {
+      axios.get("/genres").then(response => {
+        this.genres = response.data;
+      }).catch(error => {
+        console.error("Error fetching genres:", error);
+      });
+    },
+    filterMoviesByGenre() {
+      if (this.selectedGenre) {
+        this.visibleMovies = this.movies.filter(movie => movie.genres.includes(this.selectedGenre));
+      } else {
+        this.getAllMovies();
+      }
     }
-   
   }
-}
+};
 </script>
 
 <style>
-.menu{
+.menu {
   text-decoration: none;
   color: black;
   margin: 20px;
@@ -138,32 +137,27 @@ export default {
 .menu.router-link-exact-active {
   color: red !important;
 }
-.card{
-  width: 200px;
-  height: 300px;
-  margin: 30px;
-  color: white;
-  border-color: white;
-}
-.title{
+.title {
   display: inline-block;
   padding: 10px;
 }
-.genres{
-  margin: 10px;
-  margin-top: 30px !important;
-  width: 130px;
-  font-size: 20px;
+.movie-card {
+  height: 400px;
+  width: 300px;
+  margin-top: 120px;
+  display: flex;
+  flexDirection: column;
+  justify-content: center;
 }
-/*슬라이드 버튼 */
-.v-window__next,
-  .v-window__prev {
-    display: none;
+.text-center {
+  text-align: center !important;
 }
-
-.v-window__container:hover .v-window__prev,
-.v-window__container:hover .v-window__next {
-    display: block;
+.text-h5 {
+  font-size: 7em !important;
+  font-weight: bold !important;
 }
-
+.genre-text {
+  margin-top: 60px !important;
+  font-size: 1.5em !important;
+}
 </style>
