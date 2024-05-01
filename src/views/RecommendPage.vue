@@ -20,7 +20,7 @@
       >
         <v-text-field color="red"
         hide-details="auto"
-        label="영화 제목 검색.."
+        label="영화 제목 검색.. ex) Heat (1995)"
         ></v-text-field>
       </v-responsive>
       <v-btn icon style="">

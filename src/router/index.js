@@ -1,5 +1,6 @@
 import MainPage from '@/views/MainPage.vue'
 import RecommendPage from '@/views/RecommendPage.vue'
+import SearchPage from '@/views/SearchPage.vue'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
@@ -18,6 +19,12 @@ const routes = [
     path:'/about',
     name: 'about',
     component: RecommendPage
+  },
+  {
+    path:'/search',
+    name:'search',
+    component: SearchPage,
+    props: true
   }
   
 
