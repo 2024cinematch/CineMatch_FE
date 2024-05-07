@@ -1,10 +1,6 @@
 <template>
   <v-app class="overflow-hidden">
-    <v-app-bar
-      absolute
-      elevate-on-scroll
-      scroll-target="#scrolling-techniques-7"
-    >
+    <v-app-bar fixed>
       <span class="title" style="font-style: italic;">CineMatch</span>
       <router-link to="/" class="menu" style="color: white">홈</router-link>
       <router-link to="/about" class="menu" style="color: white;">추천</router-link>
@@ -15,7 +11,7 @@
         <v-text-field
           v-model="searchQuery"
           hide-details="auto"
-          label="영화 제목 검색.."
+          label="영화 제목 검색.. (ex) Heat "
           color="red"
           @keyup.enter="performSearch"
         ></v-text-field>
@@ -23,37 +19,39 @@
       <v-btn icon @click="performSearch">
         <v-icon>mdi-magnify</v-icon>
       </v-btn>
-
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
     </v-app-bar>
 
-    <!-- 장르 선택 드롭다운 -->
-    <v-container>
-      <v-row>
-        <v-col cols="12">
-          <v-select
-            v-model="selectedGenre"
-            :items="genres"
-            label="장르"
-            single-line
-            item-text="name"
-            item-value="name"
-            @change="filterMoviesByGenre"
-          ></v-select>
-        </v-col>
-      </v-row>
-    </v-container>
+    <!-- 메인 컨텐츠 영역 -->
+    <v-main>
+      <v-container class="mt-12">
+        <!-- 장르 선택 드롭다운 -->
+        <v-row>
+          <v-col cols="12" sm="2">
+            <v-select
+              v-model="selectedGenre"
+              :items="genres"
+              label="장르 선택"
+              single-line
+              item-text="name"
+              item-value="name"
+              @change="filterMoviesByGenre"
+              class="genre-select"
+              color="red"
+            ></v-select>
+          </v-col>
+        </v-row>
 
-    <v-container>
-      <v-row>
-        <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
-          <v-card class="movie-card" flat>
-            <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
-            <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+        <v-row>
+          <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
+            <v-card class="movie-card" flat>
+              <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
+              <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
   </v-app>
 </template>
 
@@ -68,7 +66,15 @@ export default {
       movies: [],
       visibleMovies: [],
       selectedGenre: null,
-      genres: [],
+      genres: [
+        { name: 'Action' },
+        { name: 'Comedy' },
+        { name: 'Drama' },
+        { name: 'Fantasy' },
+        { name: 'Horror' },
+        { name: 'Romance' },
+        { name: 'Thriller' }
+      ],
       pageSize: 10,
       nextPage: 0,
       loading: false
@@ -109,13 +115,6 @@ export default {
         this.addMoviesToView();
       }
     },
-    fetchGenres() {
-      axios.get("/genres").then(response => {
-        this.genres = response.data;
-      }).catch(error => {
-        console.error("Error fetching genres:", error);
-      });
-    },
     filterMoviesByGenre() {
       if (this.selectedGenre) {
         this.visibleMovies = this.movies.filter(movie => movie.genres.includes(this.selectedGenre));
@@ -144,7 +143,6 @@ export default {
 .movie-card {
   height: 400px;
   width: 300px;
-  margin-top: 120px;
   display: flex;
   flexDirection: column;
   justify-content: center;
@@ -159,5 +157,9 @@ export default {
 .genre-text {
   margin-top: 60px !important;
   font-size: 1.5em !important;
+}
+.genre-select {
+  padding: 40px;
+  margin-top: 20px !important;
 }
 </style>
