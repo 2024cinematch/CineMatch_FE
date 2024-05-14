@@ -1,6 +1,7 @@
 import MainPage from '@/views/MainPage.vue'
 import RecommendPage from '@/views/RecommendPage.vue'
 import SearchPage from '@/views/SearchPage.vue'
+import DetailPage from '@/views/DetailPage.vue'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
@@ -25,7 +26,13 @@ const routes = [
     name:'search',
     component: SearchPage,
     props: true
-  }
+  },
+{
+  path:'/detail',
+  name:'detail',
+  component: DetailPage,
+  props: true
+}
   
 
 ]
