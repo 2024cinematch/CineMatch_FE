@@ -11,7 +11,8 @@
         <v-text-field
           v-model="searchQuery"
           hide-details="auto"
-          label="영화 제목 검색.. (ex) Heat "
+       label="영화 제목 검색.."
+
           color="red"
           @keyup.enter="performSearch"
         ></v-text-field>
@@ -44,7 +45,9 @@
 
         <v-row>
           <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
-            <v-card class="movie-card" flat>
+
+            <v-card class="movie-card" flat @click="showDetail(movie.title)">
+
               <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
               <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
             </v-card>
@@ -90,7 +93,22 @@ export default {
   methods: {
     performSearch() {
       if (this.searchQuery.trim()) {
-        this.$router.push({ path: "/search", query: { q: this.searchQuery } });
+        axios.get(`/search/${this.searchQuery.trim()}`)
+          .then(response => {
+            if (response.data) {
+              this.$router.push({name: 'search', query: { q: this.searchQuery.trim() }});
+            } else {
+              console.log("영화를 찾을 수 없습니다.");
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching movie detail:", error);
+          });
+      }
+    },
+    showDetail() {
+    if (this.showDetail) {
+        this.$router.push({ path: "/detail"});
       }
     },
     getAllMovies() {
@@ -121,10 +139,20 @@ export default {
       } else {
         this.getAllMovies();
       }
+    },
+    showDetail(title) {
+      axios.get(`/api/movie/${title}`)
+        .then(response => {
+          this.$router.push({ name: 'movie-detail', params: { title: response.data.title } });
+        })
+        .catch(error => {
+          console.error("Error fetching movie detail:", error);
+        });
     }
   }
 };
 </script>
+
 
 <style>
 .menu {

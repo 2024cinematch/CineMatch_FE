@@ -15,7 +15,7 @@
         <v-text-field
           v-model="searchQuery"
           hide-details="auto"
-          label="영화 제목 검색.. ex) Heat (1995)"
+          label="영화 제목 검색.."
           color="red"
           @keyup.enter="getMovieDetails"
         ></v-text-field>
@@ -87,9 +87,6 @@ export default {
             this.filteredMovies = [];
           });
       }
-    },
-    toggle(movie) {
-      this.$router.push({ name: 'MovieDetail', params: { id: movie.id } });
     }
   }
 }
