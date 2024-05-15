@@ -1,4 +1,5 @@
 import MainPage from '@/views/MainPage.vue'
+import MovieDetail from '@/views/MovieDetail.vue'
 import RecommendPage from '@/views/RecommendPage.vue'
 import SearchPage from '@/views/SearchPage.vue'
 import Vue from 'vue'
@@ -25,8 +26,13 @@ const routes = [
     name:'search',
     component: SearchPage,
     props: true
+  },
+  {
+    path:'/movie-detail',
+    name:'movie-detail',
+    component: MovieDetail
   }
-  
+
 
 ]
 
