@@ -3,7 +3,7 @@
     <v-app-bar fixed>
       <span class="title" style="font-style: italic;">CineMatch</span>
       <router-link to="/" class="menu" style="color: white">홈</router-link>
-      <router-link to="/about" class="menu" style="color: white;">추천</router-link>
+      <router-link to="/recommend" class="menu" style="color: white;">추천</router-link>
       <v-spacer></v-spacer>
 
       <!-- 검색 -->
@@ -11,8 +11,7 @@
         <v-text-field
           v-model="searchQuery"
           hide-details="auto"
-       label="영화 제목 검색.."
-
+          label="🔎영화 제목 검색.."
           color="red"
           @keyup.enter="performSearch"
         ></v-text-field>
@@ -45,9 +44,7 @@
 
         <v-row>
           <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
-
             <v-card class="movie-card" flat @click="showDetail(movie.title)">
-
               <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
               <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
             </v-card>
@@ -104,11 +101,6 @@ export default {
           .catch(error => {
             console.error("Error fetching movie detail:", error);
           });
-      }
-    },
-    showDetail() {
-    if (this.showDetail) {
-        this.$router.push({ path: "/detail"});
       }
     },
     getAllMovies() {
