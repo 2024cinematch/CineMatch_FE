@@ -7,7 +7,7 @@
     >
       <span class="title" style="font-style: italic;">CineMatch</span>
       <router-link to="/" class="menu" style="color: white">홈</router-link>
-      <router-link to="/about" class="menu" style="color: white;">추천</router-link>
+      <router-link to="/recommend" class="menu" style="color: white;">추천</router-link>
       <v-spacer></v-spacer>
 
       <!-- 검색 -->
@@ -15,7 +15,7 @@
         <v-text-field
           v-model="searchQuery"
           hide-details="auto"
-          label="영화 제목 검색.. (ex) Heat (1995)"
+          label="🔎영화 제목 검색.."
           color="red"
           @keyup.enter="performSearch"
         ></v-text-field>
@@ -27,13 +27,29 @@
     </v-app-bar>
 
     <v-container>
-  <v-subheader class="recommendation-title">나와 비슷한 취향의 사람들이 추천하는 영화</v-subheader>
+  <v-subheader class="recommendation-title">나와 비슷한 취향의 사람들은 어떤 영화를 좋아할까?🤔</v-subheader>
+    </v-container>
+
+    <!--추천영화검색-->
+    <v-container >
+      <v-row class="search-button-row">
+        <v-responsive max-width="600" style="margin-left: auto; margin-right: auto;">
+          <v-text-field
+            v-model="search"
+            hide-details="auto"
+            label="🔎재미있게 본 영화의 제목을 정확히 입력해주세요. (예시) Heat (1995)"
+            color="red"
+            @keyup.enter="getRecommendedMovies"
+            class="search-field" 
+          ></v-text-field>
+        </v-responsive>
+      </v-row>
     </v-container>
 
     <v-container>
       <v-row>
         <v-col v-for="(movie, index) in visibleMovies" :key="index" cols="12" sm="6" md="4" lg="3">
-          <v-card class="movie-card" flat>
+          <v-card class="movie-card" flat @click="showDetail(movie.title)">
             <v-card-title class="text-center text-h5">{{ movie.title }}</v-card-title>
             <v-card-subtitle class="text-center genre-text">{{ movie.genres.split(', ').join(', ') }}</v-card-subtitle>
           </v-card>
@@ -57,7 +73,8 @@ export default {
       genres: [],
       pageSize: 10,
       nextPage: 0,
-      loading: false
+      loading: false,
+      search: ""
     };
   },
   mounted() {
@@ -73,8 +90,9 @@ export default {
         this.$router.push({ path: "/search", query: { q: this.searchQuery } });
       }
     },
-    getAllMovies() {
-      axios.get("/all").then(response => {
+    getRecommendedMovies() {
+      const searchTitle = this.search.trim();
+      axios.get(`/api/recommendations/title/${searchTitle}`).then(response => {
         this.movies = response.data;
         this.addMoviesToView();
       }).catch(error => {
@@ -108,6 +126,15 @@ export default {
       } else {
         this.getAllMovies();
       }
+    },
+    showDetail(title) {
+      axios.get(`/api/movie/${title}`)
+        .then(response => {
+          this.$router.push({ name: 'movie-detail', params: { title: response.data.title } });
+        })
+        .catch(error => {
+          console.error("Error fetching movie detail:", error);
+        });
     }
   }
 };
@@ -147,7 +174,18 @@ export default {
 }
 .recommendation-title {
   margin-top: 80px !important;
+  margin-bottom: -50px !important;
   font-size: 24px !important;
   font-weight: bold !important;
+}
+.search-button-row{
+  margin-top: 50px !important;
+}
+.search-field {
+  width: 100% !important;
+  margin: 0 auto !important;
+  display: block !important;
+  text-align: center !important;
+  margin-bottom: 20px !important;
 }
 </style>
